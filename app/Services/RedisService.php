@@ -17,4 +17,9 @@ class RedisService implements DataManagementInterface
             'status' => JobStatusEnum::PENDING->value,
         ]);
     }
+
+    public function getJob(string $jobId): array
+    {
+        return Redis::hgetAll("job:$jobId");
+    }
 }
