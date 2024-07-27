@@ -36,4 +36,26 @@ class JobController extends Controller
             ]
         ], Response::HTTP_CREATED);
     }
+
+    public function show(string $id): JsonResponse
+    {
+       $data = $this->dataManager->getJob($id);
+
+       if (! $data) {
+           return response()->json([
+                'error' => "Job was not found with id $id",
+           ], Response::HTTP_NOT_FOUND);
+       }
+
+        return response()->json([
+            'data' => [
+                'id' => $id,
+                'type' => 'jobs',
+                'attributes' => [
+                    'job_details' => Arr::get($data, 'data'),
+                    'status' => Arr::get($data, 'status'),
+                ]
+            ]
+        ], Response::HTTP_OK);
+    }
 }
