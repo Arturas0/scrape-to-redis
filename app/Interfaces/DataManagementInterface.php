@@ -9,4 +9,6 @@ interface DataManagementInterface
     public function storeJob(string $jobId, array $data);
 
     public function getJob(string $jobId): array;
+
+    public function deleteJob(string $jobId): bool;
 }

@@ -14,8 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class JobController extends Controller
 {
-    public function __construct(private readonly DataManagementInterface $dataManager)
-    {}
+    public function __construct(private readonly DataManagementInterface $dataManager) {}
+
     public function store(JobStoreRequest $request): JsonResponse
     {
         $data = Arr::get($request->validated(), 'data');
@@ -32,20 +32,20 @@ class JobController extends Controller
                 'attributes' => [
                     'job_details' => $data,
                     'status' => JobStatusEnum::PENDING->value,
-                ]
-            ]
+                ],
+            ],
         ], Response::HTTP_CREATED);
     }
 
     public function show(string $id): JsonResponse
     {
-       $data = $this->dataManager->getJob($id);
+        $data = $this->dataManager->getJob($id);
 
-       if (! $data) {
-           return response()->json([
-                'error' => "Job was not found with id $id",
-           ], Response::HTTP_NOT_FOUND);
-       }
+        if (! $data) {
+            return response()->json([
+                'message' => "Job was not found with id $id",
+            ], Response::HTTP_NOT_FOUND);
+        }
 
         return response()->json([
             'data' => [
@@ -54,8 +54,25 @@ class JobController extends Controller
                 'attributes' => [
                     'job_details' => Arr::get($data, 'data'),
                     'status' => Arr::get($data, 'status'),
-                ]
-            ]
+                ],
+            ],
         ], Response::HTTP_OK);
+    }
+
+    public function delete(string $id): JsonResponse
+    {
+        $jobDeleted = $this->dataManager->deleteJob($id);
+
+        $message = '';
+        $statusCode = Response::HTTP_NO_CONTENT;
+
+        if (! $jobDeleted) {
+            $message = "Job was not found with id $id";
+            $statusCode = Response::HTTP_NOT_FOUND;
+        }
+
+        return response()->json([
+            'message' => $message,
+        ], $statusCode);
     }
 }
