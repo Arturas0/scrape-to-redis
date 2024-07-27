@@ -22,4 +22,9 @@ class RedisService implements DataManagementInterface
     {
         return Redis::hgetAll("job:$jobId");
     }
+
+    public function deleteJob(string $jobId): bool
+    {
+        return (bool) Redis::del("job:$jobId");
+    }
 }
