@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Interfaces\DataManagementInterface;
+use App\Contracts\JobRepositoryContract;
 use App\Support\Enums\JobStatusEnum;
 use Illuminate\Support\Facades\Redis;
 
-class RedisService implements DataManagementInterface
+class RedisService implements JobRepositoryContract
 {
     public function storeJob(string $jobId, array $data): void
     {
@@ -16,6 +16,24 @@ class RedisService implements DataManagementInterface
             'data' => json_encode($data),
             'status' => JobStatusEnum::PENDING->value,
         ]);
+    }
+
+    public function addScrappedDataToJob(string $jobId, string $url, array $scrapedData): void
+    {
+        $jobData = Redis::hget("job:$jobId", 'data');
+        $data = json_decode($jobData, true);
+
+        foreach ($data as &$item) {
+            if ($item['url'] === $url) {
+                if (! isset($item['scrapedData'])) {
+                    $item['scrapedData'] = [];
+                }
+
+                $item['scrapedData'] = $scrapedData;
+            }
+        }
+
+        Redis::hset("job:$jobId", 'data', json_encode($data));
     }
 
     public function getJob(string $jobId): array
@@ -26,5 +44,16 @@ class RedisService implements DataManagementInterface
     public function deleteJob(string $jobId): bool
     {
         return (bool) Redis::del("job:$jobId");
+    }
+
+    public function changeJobStatus(string $jobId, JobStatusEnum $status): bool
+    {
+        if (Redis::exists("job:$jobId")) {
+            Redis::hset("job:$jobId", 'status', $status->value);
+
+            return true;
+        }
+
+        return false;
     }
 }
