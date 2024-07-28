@@ -29,8 +29,10 @@ class ScrapeJob implements ShouldQueue
             $selectors = Arr::get($urlWithSelectors, 'selectors');
 
             $scrappedData = $this->scrapper->scrape($this->jobId, $url, $selectors);
+
             $this->jobRepository->addScrappedDataToJob($this->jobId, $url, $scrappedData);
             $this->jobRepository->changeJobStatus($this->jobId, JobStatusEnum::COMPLETED);
+            $this->jobRepository->changeUpdatedAt($this->jobId);
         }
     }
 }

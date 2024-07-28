@@ -17,4 +17,6 @@ interface JobRepositoryContract
     public function addScrappedDataToJob(string $jobId, string $url, array $scrapedData): void;
 
     public function changeJobStatus(string $jobId, JobStatusEnum $status): bool;
+
+    public function changeUpdatedAt(string $jobId): void;
 }

@@ -15,6 +15,8 @@ class RedisService implements JobRepositoryContract
         Redis::hmset("job:$jobId", [
             'data' => json_encode($data),
             'status' => JobStatusEnum::PENDING->value,
+            'created_at' => now()->toDateTimeString(),
+            'updated_at' => now()->toDateTimeString(),
         ]);
     }
 
@@ -55,5 +57,12 @@ class RedisService implements JobRepositoryContract
         }
 
         return false;
+    }
+
+    public function changeUpdatedAt(string $jobId): void
+    {
+        if (Redis::exists("job:$jobId")) {
+            Redis::hset("job:$jobId", 'updated_at', now()->toDateTimeString());
+        }
     }
 }

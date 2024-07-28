@@ -57,8 +57,10 @@ class JobController extends Controller
                 'id' => $id,
                 'type' => 'jobs',
                 'attributes' => [
-                    'job_details' => Arr::get($data, 'data'),
+                    'job_details' => json_decode(Arr::get($data, 'data'), true),
                     'status' => Arr::get($data, 'status'),
+                    'created_at' => Arr::get($data, 'created_at'),
+                    'updated_at' => Arr::get($data, 'updated_at'),
                 ],
             ],
         ], Response::HTTP_OK);
