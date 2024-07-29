@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Contracts\JobRepositoryContract;
 use App\Contracts\ScrapperContract;
 use App\Http\Requests\JobStoreRequest;
+use App\Http\Resources\JobResource;
 use App\Jobs\ScrapeJob;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
@@ -31,18 +32,12 @@ class JobController extends Controller
 
         $data = $this->jobRepository->getJob($id);
 
-        return response()->json([
-            'data' => [
-                'id' => $id,
-                'type' => 'jobs',
-                'attributes' => [
-                    'job_details' => json_decode(Arr::get($data, 'data'), true),
-                    'status' => Arr::get($data, 'status'),
-                    'created_at' => Arr::get($data, 'created_at'),
-                    'updated_at' => Arr::get($data, 'updated_at'),
-                ],
-            ],
-        ], Response::HTTP_CREATED);
+        return JobResource::make([
+            'id' => $id,
+            'resource' => $data,
+        ])
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     public function show(string $id): JsonResponse
@@ -55,18 +50,12 @@ class JobController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        return response()->json([
-            'data' => [
-                'id' => $id,
-                'type' => 'jobs',
-                'attributes' => [
-                    'job_details' => json_decode(Arr::get($data, 'data'), true),
-                    'status' => Arr::get($data, 'status'),
-                    'created_at' => Arr::get($data, 'created_at'),
-                    'updated_at' => Arr::get($data, 'updated_at'),
-                ],
-            ],
-        ], Response::HTTP_OK);
+        return JobResource::make([
+            'id' => $id,
+            'resource' => $data,
+        ])
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
     }
 
     public function delete(string $id): JsonResponse
