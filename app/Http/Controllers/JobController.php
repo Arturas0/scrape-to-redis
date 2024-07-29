@@ -8,7 +8,6 @@ use App\Contracts\JobRepositoryContract;
 use App\Contracts\ScrapperContract;
 use App\Http\Requests\JobStoreRequest;
 use App\Jobs\ScrapeJob;
-use App\Support\Enums\JobStatusEnum;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -23,20 +22,24 @@ class JobController extends Controller
 
     public function store(JobStoreRequest $request): JsonResponse
     {
-        $data = Arr::get($request->validated(), 'data');
+        $validatedData = Arr::get($request->validated(), 'data');
         $id = Str::ulid()->toBase32();
 
-        $this->jobRepository->storeJob($id, $data);
+        $this->jobRepository->storeJob($id, $validatedData);
 
-        ScrapeJob::dispatch($this->jobRepository, $this->scrapper, $id, $data);
+        ScrapeJob::dispatch($this->jobRepository, $this->scrapper, $id, $validatedData);
+
+        $data = $this->jobRepository->getJob($id);
 
         return response()->json([
             'data' => [
                 'id' => $id,
                 'type' => 'jobs',
                 'attributes' => [
-                    'job_details' => $data,
-                    'status' => JobStatusEnum::PENDING->value,
+                    'job_details' => json_decode(Arr::get($data, 'data'), true),
+                    'status' => Arr::get($data, 'status'),
+                    'created_at' => Arr::get($data, 'created_at'),
+                    'updated_at' => Arr::get($data, 'updated_at'),
                 ],
             ],
         ], Response::HTTP_CREATED);
