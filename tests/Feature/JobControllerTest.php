@@ -7,6 +7,7 @@ use App\Support\Enums\JobStatusEnum;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
@@ -60,5 +61,22 @@ class JobControllerTest extends TestCase
         $this->json('POST', '/api/jobs', $payload);
 
         Queue::assertPushed(ScrapeJob::class);
+    }
+
+    public function test_scrapping_job_can_be_deleted(): void
+    {
+        $jobId = Str::ulid()->toBase32();
+
+        Redis::hmset("job:$jobId", [
+            'data' => json_encode([]),
+            'status' => JobStatusEnum::PENDING->value,
+        ]);
+
+        $this->assertTrue((bool) Redis::exists("job:$jobId"));
+
+        $this->json('DELETE', "/api/jobs/$jobId")
+            ->assertStatus(Response::HTTP_NO_CONTENT);
+
+        $this->assertTrue(! Redis::exists("job:$jobId"));
     }
 }
