@@ -7,7 +7,6 @@ use App\Support\Enums\JobStatusEnum;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
@@ -63,14 +62,20 @@ class JobControllerTest extends TestCase
         Queue::assertPushed(ScrapeJob::class);
     }
 
+    public function test_can_get_scrapping_job_by_id(): void
+    {
+        $jobId = Arr::get($this->createJob(), 'id');
+
+        $this->json('GET', "/api/jobs/$jobId")
+            ->assertStatus(Response::HTTP_OK)
+            ->assertJsonFragment([
+                'id' => $jobId,
+            ]);
+    }
+
     public function test_scrapping_job_can_be_deleted(): void
     {
-        $jobId = Str::ulid()->toBase32();
-
-        Redis::hmset("job:$jobId", [
-            'data' => json_encode([]),
-            'status' => JobStatusEnum::PENDING->value,
-        ]);
+        $jobId = Arr::get($this->createJob(), 'id');
 
         $this->assertTrue((bool) Redis::exists("job:$jobId"));
 
