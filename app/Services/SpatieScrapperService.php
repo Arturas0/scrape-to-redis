@@ -16,6 +16,7 @@ class SpatieScrapperService implements ScrapperContract
     public function scrape(string $jobId, string $url, array $selectors): ?array
     {
         $selectorScrappedData = [];
+        $this->observer->scrappedData = [];
 
         foreach ($selectors as $selector) {
             $this->observer->setSelector($selector);
