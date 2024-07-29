@@ -9,6 +9,13 @@ use Illuminate\Support\Str;
 
 abstract class TestCase extends BaseTestCase
 {
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        Redis::flushdb();
+    }
+
     public function createJob(?string $jobId = null, ?array $jobData = []): array
     {
         $id = $jobId ?? Str::ulid()->toBase32();
