@@ -18,17 +18,24 @@ class SpatieScrapperService implements ScrapperContract
         $selectorScrappedData = [];
         $this->observer->scrappedData = [];
 
-        foreach ($selectors as $selector) {
-            $this->observer->setSelector($selector);
+        $chunkSize = 10;
 
-            Crawler::create()
-                ->setCrawlObserver($this->observer)
-                ->setMaximumDepth(0)
-                ->setTotalCrawlLimit(1)
-                ->ignoreRobots()
-                ->startCrawling($url);
+        $selectorChunks = array_chunk($selectors, $chunkSize);
 
-            $selectorScrappedData[$selector] = $this->observer->scrappedData;
+        foreach ($selectorChunks as $chunk) {
+            foreach ($chunk as $selector) {
+                $this->observer->scrappedData = [];
+                $this->observer->setSelector($selector);
+
+                Crawler::create()
+                    ->setCrawlObserver($this->observer)
+                    ->setMaximumDepth(0)
+                    ->setTotalCrawlLimit(1)
+                    ->ignoreRobots()
+                    ->startCrawling($url);
+
+                $selectorScrappedData[$selector] = $this->observer->scrappedData;
+            }
         }
 
         return $selectorScrappedData;

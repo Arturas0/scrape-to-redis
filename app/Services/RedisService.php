@@ -24,18 +24,25 @@ class RedisService implements JobRepositoryContract
     {
         $jobData = Redis::hget("job:$jobId", 'data');
         $data = json_decode($jobData, true);
+        $chunkSize = 10;
 
-        foreach ($data as &$item) {
-            if ($item['url'] === $url) {
-                if (! isset($item['scrapedData'])) {
-                    $item['scrapedData'] = [];
+        $dataChunks = array_chunk($data, $chunkSize);
+
+        foreach ($dataChunks as &$chunk) {
+            foreach ($chunk as &$item) {
+                if ($item['url'] === $url) {
+                    if (! isset($item['scrapedData'])) {
+                        $item['scrapedData'] = [];
+                    }
+
+                    $item['scrapedData'] = $scrapedData;
                 }
-
-                $item['scrapedData'] = $scrapedData;
             }
         }
 
-        Redis::hset("job:$jobId", 'data', json_encode($data));
+        $updatedData = array_merge(...$dataChunks);
+
+        Redis::hset("job:$jobId", 'data', json_encode($updatedData));
     }
 
     public function getJob(string $jobId): array
