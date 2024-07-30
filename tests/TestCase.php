@@ -13,7 +13,10 @@ abstract class TestCase extends BaseTestCase
     {
         parent::tearDown();
 
-        Redis::flushdb();
+        try {
+            Redis::flushdb();
+        } catch (\Exception $e) {
+        }
     }
 
     public function createJob(?string $jobId = null, ?array $jobData = []): array
