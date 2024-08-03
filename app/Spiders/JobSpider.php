@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Observers;
+namespace App\Spiders;
 
 use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
@@ -10,7 +10,7 @@ use Psr\Http\Message\UriInterface;
 use Spatie\Crawler\CrawlObservers\CrawlObserver;
 use Symfony\Component\DomCrawler\Crawler as DomCrawler;
 
-class SpatieCrawlerObserver extends CrawlObserver
+class JobSpider extends CrawlObserver
 {
     public function __construct(
         protected string $selector = '',

@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\ScrapperContract;
-use App\Observers\SpatieCrawlerObserver;
+use App\Spiders\JobSpider;
 use Spatie\Crawler\Crawler;
 
 class SpatieScrapperService implements ScrapperContract
 {
-    public function __construct(protected SpatieCrawlerObserver $observer,
-    ) {}
+    public function __construct(protected JobSpider $spider)
+    {
+    }
 
     public function scrape(string $jobId, string $url, array $selectors): ?array
     {
         $selectorScrappedData = [];
-        $this->observer->scrappedData = [];
+        $this->spider->scrappedData = [];
 
         $chunkSize = 10;
 
@@ -24,17 +25,17 @@ class SpatieScrapperService implements ScrapperContract
 
         foreach ($selectorChunks as $chunk) {
             foreach ($chunk as $selector) {
-                $this->observer->scrappedData = [];
-                $this->observer->setSelector($selector);
+                $this->spider->scrappedData = [];
+                $this->spider->setSelector($selector);
 
                 Crawler::create()
-                    ->setCrawlObserver($this->observer)
+                    ->setCrawlObserver($this->spider)
                     ->setMaximumDepth(0)
                     ->setTotalCrawlLimit(1)
                     ->ignoreRobots()
                     ->startCrawling($url);
 
-                $selectorScrappedData[$selector] = $this->observer->scrappedData;
+                $selectorScrappedData[$selector] = $this->spider->scrappedData;
             }
         }
 
